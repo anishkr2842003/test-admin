@@ -1,15 +1,47 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Table, Input, Button, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+import { ShimmerTable } from "react-shimmer-effects";
 import { createStyles } from 'antd-style';
 import data from './data.json';
+import axios from 'axios';
 
 function Datatable() {
 
-    const dataSource = data.map(item => ({ ...item, key: item.id }));
-
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
+
+    useEffect(() => {
+        const timerLabel = 'fetchData' + Date.now(); // Create a unique label
+        console.time(timerLabel);
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('https://testapi.rasanonline.com/api/get-data');
+                setData(response.data.data);
+                setLoading(false);
+            } catch (error) {
+                setError(error);
+                setLoading(false);
+            }finally {
+                console.timeEnd(timerLabel); // Stop the timer and log the elapsed time
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <ShimmerTable row={5} col={7} />;
+    }
+
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+
+    const dataSource = data.map(item => ({ ...item, key: item.id })).reverse();
 
     const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -79,10 +111,32 @@ function Datatable() {
             ...getColumnSearchProps('name')
         },
         {
-            title: 'Age',
-            dataIndex: 'age',
-            key: 'age',
-            sorter: (a, b) => a.age - b.age,
+            title: 'Position',
+            dataIndex: 'position',
+            key: 'position',
+            sorter: (a, b) => a.position.localeCompare(b.position),
+            ...getColumnSearchProps('position')
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+            sorter: (a, b) => a.email.localeCompare(b.email),
+            ...getColumnSearchProps('email')
+        },
+        {
+            title: 'Contact No',
+            dataIndex: 'contact_nu',
+            key: 'contact_nu',
+            sorter: (a, b) => a.contact_nu.localeCompare(b.contact_nu),
+            ...getColumnSearchProps('contact_nu')
+        },
+        {
+            title: 'DOB',
+            dataIndex: 'dob',
+            key: 'dob',
+            sorter: (a, b) => a.dob.localeCompare(b.dob),
+            ...getColumnSearchProps('dob')
         },
         {
             title: 'Address',

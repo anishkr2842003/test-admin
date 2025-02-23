@@ -25,7 +25,7 @@ function CategoryList() {
           <Datatable />
         </div>
       </section>
-      
+
     </>
   )
 }

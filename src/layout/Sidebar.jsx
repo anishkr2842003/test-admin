@@ -5,7 +5,7 @@ import {
     faBox, faShoppingCart, faUser, faUsers,
     faImages, faChartBar, faCogs, faQuestionCircle, faLifeRing
 } from "@fortawesome/free-solid-svg-icons";
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 
 function Sidebar() {
 
@@ -15,6 +15,15 @@ function Sidebar() {
             // ...prevState,
             [menuId]: !prevState[menuId],
         }));
+    }
+
+    const currentLocation = useLocation().pathname
+
+    const handleActive = (pathName)=>{
+        return pathName == currentLocation ? 'active' : '';
+        console.log("pathname" + pathName);
+        console.log("currentLocation" + currentLocation);
+
     }
 
     return (
@@ -52,13 +61,13 @@ function Sidebar() {
                                 </a>
                                 <ul className="nav nav-treeview">
                                     <li className="nav-item">
-                                        <Link to={'/addcategory'} className="nav-link active">
+                                        <Link to={'/addcategory'} className={`nav-link ${handleActive('/addcategory')}`}>
                                             <i className="far fa-circle nav-icon" />
                                             <p>Add Category</p>
                                         </Link>
                                     </li>
                                     <li className="nav-item">
-                                        <Link to={'/allcategory'} className="nav-link">
+                                        <Link to={'/allcategory'} className={`nav-link ${handleActive('/allcategory')}`}>
                                             <i className="far fa-circle nav-icon" />
                                             <p>Category List</p>
                                         </Link>
