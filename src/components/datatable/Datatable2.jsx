@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { Table, Input, Button, Space } from 'antd';
 import ContentLoader from 'react-content-loader';
 import { SearchOutlined } from '@ant-design/icons';
-import { createStyles } from 'antd-style';
-import apiClient from '../../utils/apiClient';
 import { useMediaQuery } from 'react-responsive';
 
 const ShimmerTable = () => (
@@ -14,51 +12,27 @@ const ShimmerTable = () => (
         backgroundColor="#f3f3f3"
         foregroundColor="#ecebeb"
     >
-        {Array(5)
-            .fill('')
-            .map((_, index) => (
-                <rect key={index} x="10" y={index * 40} rx="3" ry="3" width="95%" height="30" />
-            ))}
+        {Array(5).fill('').map((_, index) => (
+            <rect key={index} x="10" y={index * 40} rx="3" ry="3" width="95%" height="30" />
+        ))}
     </ContentLoader>
 );
 
-function Datatable(refreshData) {
-
-    const [data, setData] = useState([]);
+function Datatable({ data }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
     const isMobile = useMediaQuery({ maxWidth: 768 });
-    const [loadTime, setLoadTime] = useState(0);
 
     useEffect(() => {
+        if (data.length > 0) {
+            setLoading(false);
+        }
+    }, [data]);
 
-        const timerLabel = 'Data loaded in' + Date.now();
-        console.time(timerLabel);
-        const fetchData = async () => {
-            try {
-                const response = await apiClient.get('/get-data');
-                setData(response.data.data);
-                setLoading(false);
-            } catch (error) {
-                setError(error);
-                setLoading(false);
-            } finally {
-                console.timeEnd(timerLabel);
-            }
-        };
-
-        fetchData();
-    }, [refreshData]);
-
-    if (loading) {
-        return <ShimmerTable />;
-    }
-
-    if (error) {
-        return <div>Error: {error.message}</div>;
-    }
+    if (loading) return <ShimmerTable />;
+    if (error) return <div>Error: {error.message}</div>;
 
     const dataSource = data.map(item => ({ ...item, key: item.id })).reverse();
 
@@ -91,9 +65,8 @@ function Datatable(refreshData) {
         filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
         onFilter: (value, record) =>
             record[dataIndex]
-                .toString()
-                .toLowerCase()
-                .includes(value.toLowerCase()),
+                ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+                : '',
         filterDropdownProps: {
             onOpenChange: (visible) => {
                 if (visible) {
@@ -116,46 +89,45 @@ function Datatable(refreshData) {
 
     const columns = [
         {
-            title: 'id',
+            title: 'ID',
             dataIndex: 'id',
             key: 'id',
-            sorter: (a, b) => a.key.localeCompare(b.key),
-            // ...getColumnSearchProps('id')
+            sorter: (a, b) => a.id - b.id,
         },
         {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
             sorter: (a, b) => a.name.localeCompare(b.name),
-            ...getColumnSearchProps('name')
+            ...getColumnSearchProps('name'),
         },
         {
             title: 'Position',
             dataIndex: 'position',
             key: 'position',
             sorter: (a, b) => a.position.localeCompare(b.position),
-            ...getColumnSearchProps('position')
+            ...getColumnSearchProps('position'),
         },
         {
             title: 'Email',
             dataIndex: 'email',
             key: 'email',
             sorter: (a, b) => a.email.localeCompare(b.email),
-            ...getColumnSearchProps('email')
+            ...getColumnSearchProps('email'),
         },
         {
             title: 'Contact No',
             dataIndex: 'contact_nu',
             key: 'contact_nu',
             sorter: (a, b) => a.contact_nu.localeCompare(b.contact_nu),
-            ...getColumnSearchProps('contact_nu')
+            ...getColumnSearchProps('contact_nu'),
         },
         {
             title: 'DOB',
             dataIndex: 'dob',
             key: 'dob',
             sorter: (a, b) => a.dob.localeCompare(b.dob),
-            ...getColumnSearchProps('dob')
+            ...getColumnSearchProps('dob'),
         },
         {
             title: 'Address',
@@ -165,22 +137,16 @@ function Datatable(refreshData) {
         },
     ];
 
-
     return (
-        <>
-            <Table
-                dataSource={dataSource}
-                columns={columns}
-                // pagination={{
-                //     pageSize: 5,
-                // }}
-                scroll={{
-                    x: 'max-content',
-                    y: isMobile ? 300 : 500,
-                }}
-            />
-        </>
-    )
+        <Table
+            dataSource={dataSource}
+            columns={columns}
+            scroll={{
+                x: 'max-content',
+                y: isMobile ? 300 : 500,
+            }}
+        />
+    );
 }
 
-export default Datatable
+export default Datatable;

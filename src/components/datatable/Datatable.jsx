@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Table, Input, Button, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import ContentLoader from 'react-content-loader';
-import { createStyles } from 'antd-style';
+import { useMediaQuery } from 'react-responsive';
 import apiClient from '../../utils/apiClient';
 
 const ShimmerTable = () => (
@@ -13,7 +13,7 @@ const ShimmerTable = () => (
         backgroundColor="#f3f3f3"
         foregroundColor="#ecebeb"
     >
-        {Array(5)
+        {Array(20)
             .fill('')
             .map((_, index) => (
                 <rect key={index} x="10" y={index * 40} rx="3" ry="3" width="95%" height="30" />
@@ -28,6 +28,7 @@ function Datatable() {
     const [error, setError] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
+    const isMobile = useMediaQuery({ maxWidth: 768 });
 
     useEffect(() => {
         const timerLabel = 'fetchData' + Date.now();
@@ -112,10 +113,10 @@ function Datatable() {
 
     const columns = [
         {
-            title: 'id',
+            title: 'Id',
             dataIndex: 'id',
             key: 'id',
-            sorter: (a, b) => a.key.localeCompare(b.key),
+            sorter: (a, b) => a.id - b.id, // use for number sorting
             // ...getColumnSearchProps('id')
         },
         {
@@ -166,11 +167,12 @@ function Datatable() {
             <Table
                 dataSource={dataSource}
                 columns={columns}
-                pagination={{
-                    pageSize: 10,
-                }}
+                // pagination={{
+                //     pageSize: 10,
+                // }}
                 scroll={{
-                    y: 70 * 5
+                    x: 'max-content',
+                    y: isMobile ? 300 : 500,
                 }}
             />
         </>

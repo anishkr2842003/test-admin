@@ -17,7 +17,7 @@ function CategoryList() {
               </ol>
             </div>
           </div>
-          <div className="row mb-2 justify-content-end">
+          {/* <div className="row mb-2 justify-content-end">
             <div className="col-12 d-flex justify-content-end">
               <form action="" id='searchData'>
                 <div className="input-group">
@@ -30,7 +30,7 @@ function CategoryList() {
                 </div>
               </form>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 

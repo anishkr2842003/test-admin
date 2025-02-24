@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 import apiClient from '../utils/apiClient';
@@ -43,6 +43,9 @@ function Test() {
   } = useForm();
 
   const [refreshData, setRefreshData] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
 
   const onSubmit = async (data) => {
     toast.loading('Submitting data...');
@@ -66,6 +69,38 @@ function Test() {
       toast.dismiss();
       toast.error('Error submitting data');
     }
+  };
+
+  // Fetch data from API
+  useEffect(() => {
+    async function fetchData() {
+      const timerLabel = 'fetchData' + Date.now();
+      console.time(timerLabel);
+      try {
+        const response = await apiClient.get('/get-data');
+        console.timeEnd(timerLabel);
+        setData(response.data.data);
+        setFilteredData(response.data.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+    fetchData();
+  }, [refreshData]);
+
+  // Handle search input change
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+
+    // Filter data based on search term
+    const filtered = data.filter((item) =>
+      Object.values(item).some((val) =>
+        String(val).toLowerCase().includes(value)
+      )
+    );
+
+    setFilteredData(filtered);
   };
 
   return (
@@ -234,17 +269,31 @@ function Test() {
                     <h1>All Data</h1>
                   </div>
                   <div className="col-sm-6">
-                    <ol className="breadcrumb float-sm-right">
+                    {/* <ol className="breadcrumb float-sm-right">
                       <li className="breadcrumb-item"><a href="dashboard.php">Home</a></li>
                       <li className="breadcrumb-item active">All Data</li>
-                    </ol>
+                    </ol> */}
+                    <div className="row mb-2 justify-content-end">
+                      <div className="col-12 d-flex justify-content-end">
+                        <form id='searchData'>
+                          <div className="input-group">
+                            <input type="text" className="form-control" placeholder="Search..." value={searchTerm} onChange={handleSearch} />
+                            <div className="input-group-append">
+                              <button className="btn btn-primary" type="button">
+                                Search
+                              </button>
+                            </div>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="row mb-2 justify-content-end">
+                {/* <div className="row mb-2 justify-content-end">
                   <div className="col-12 d-flex justify-content-end">
-                    <form action="" id='searchData'>
+                    <form id='searchData'>
                       <div className="input-group">
-                        <input type="text" className="form-control" placeholder="Search..." />
+                        <input type="text" className="form-control" placeholder="Search..." value={searchTerm} onChange={handleSearch} />
                         <div className="input-group-append">
                           <button className="btn btn-primary" type="button">
                             Search
@@ -253,13 +302,13 @@ function Test() {
                       </div>
                     </form>
                   </div>
-                </div>
+                </div> */}
               </div>
             </section>
 
             <section className="content">
               <div className="container-fluid">
-                <Datatable refreshData={refreshData} />
+                <Datatable data={filteredData} />
               </div>
             </section>
           </div>
