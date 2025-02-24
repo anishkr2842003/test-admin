@@ -1,36 +1,47 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faHome, faTachometerAlt, faList, faThLarge,
     faBox, faShoppingCart, faUser, faUsers,
-    faImages, faChartBar, faCogs, faQuestionCircle, faLifeRing
+    faImages, faChartBar, faCogs, faQuestionCircle, faLifeRing,
+    faServer
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from 'react-router';
 
 function Sidebar() {
 
     const [openMenus, setOpenMenus] = useState({});
-    const handleToggleMenu = (menuId) => {
-        setOpenMenus((prevState) => ({
-            // ...prevState,
-            [menuId]: !prevState[menuId],
-        }));
-    }
-
+    const location = useLocation();
     const currentLocation = useLocation().pathname
 
-    const handleActive = (pathName)=>{
-        return pathName == currentLocation ? 'active' : '';
-        console.log("pathname" + pathName);
-        console.log("currentLocation" + currentLocation);
+    useEffect(() => {
+        const pathSegments = location.pathname.split('/').filter(Boolean);
+        const newOpenMenus = {};
 
+        if (pathSegments.length > 0) {
+            const parentMenu = pathSegments[0];
+            newOpenMenus[parentMenu] = true;
+        }
+
+        setOpenMenus(prev => ({ ...prev, ...newOpenMenus }));
+    }, [location]);
+
+    const handleToggleMenu = (menuId) => {
+        setOpenMenus(prevState => ({
+            ...prevState,
+            [menuId]: !prevState[menuId],
+        }));
+    };
+
+    const handleActive = (pathName) => {
+        return pathName == currentLocation ? 'active' : '';
     }
 
     return (
         <>
             <aside className="main-sidebar sidebar-dark-primary elevation-4">
                 {/* Brand Logo */}
-                <a href="index3.html" className="brand-link">
+                <a className="brand-link">
                     <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" className="brand-image img-circle elevation-3" style={{ opacity: '.8' }} />
                     <span className="brand-text font-weight-light">AdminLTE 3</span>
                 </a>
@@ -41,17 +52,29 @@ function Sidebar() {
                         <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                             {/* dashboard */}
                             <li className="nav-item">
-                                <a href="pages/gallery.html" className="nav-link">
+                                <Link to={'/'} className={`nav-link ${currentLocation == '/' && 'active'}`}>
                                     {/* <i className="nav-icon fas fa-tachometer-alt" /> */}
                                     <FontAwesomeIcon icon={faTachometerAlt} className='nav-icon' />
                                     <p>
                                         Dshboard
                                     </p>
-                                </a>
+                                </Link>
+                            </li>
+                            {/* Test */}
+                            <li className="nav-item">
+                                <Link to={'/test'} className={`nav-link ${currentLocation == '/test' && 'active'}`}>
+                                    {/* <i className="nav-icon fas fa-tachometer-alt" /> */}
+                                    <FontAwesomeIcon icon={faServer} className='nav-icon' />
+                                    <p>
+                                        Test
+                                    </p>
+                                </Link>
                             </li>
                             {/* category */}
                             <li className={`nav-item  ${openMenus.category && 'menu-open'}`}>
-                                <a href="#" className={`nav-link ${openMenus.category && 'active'}`} onClick={() => handleToggleMenu('category')}>
+                                <a className={`nav-link ${currentLocation.startsWith('/addcategory') ||
+                                    currentLocation.startsWith('/allcategory') ? 'active' : ''
+                                    }`} onClick={() => handleToggleMenu('category')}>
                                     {/* <i className="nav-icon fab fa-product-hunt"></i> */}
                                     <FontAwesomeIcon icon={faList} className='nav-icon' />
                                     <p>
@@ -76,7 +99,7 @@ function Sidebar() {
                             </li>
                             {/* Attaribute */}
                             <li className={`nav-item  ${openMenus.variants && 'menu-open'}`}>
-                                <a href="#" className={`nav-link ${openMenus.variants && 'active'}`} onClick={() => handleToggleMenu('variants')}>
+                                <a className={`nav-link ${openMenus.variants && 'active'}`} onClick={() => handleToggleMenu('variants')}>
                                     {/* <i className="nav-icon fab fa-product-hunt"></i> */}
                                     <FontAwesomeIcon icon={faThLarge} className='nav-icon' />
                                     <p>
@@ -86,13 +109,13 @@ function Sidebar() {
                                 </a>
                                 <ul className="nav nav-treeview">
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link active">
+                                        <a className="nav-link active">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Add Variants</p>
                                         </a>
                                     </li>
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link">
+                                        <a className="nav-link">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Variants List</p>
                                         </a>
@@ -101,7 +124,7 @@ function Sidebar() {
                             </li>
                             {/* product */}
                             <li className={`nav-item  ${openMenus.product && 'menu-open'}`}>
-                                <a href="#" className={`nav-link ${openMenus.product && 'active'}`} onClick={() => handleToggleMenu('product')}>
+                                <a className={`nav-link ${openMenus.product && 'active'}`} onClick={() => handleToggleMenu('product')}>
                                     <FontAwesomeIcon icon={faBox} className='nav-icon' />
                                     <p>
                                         Product
@@ -110,19 +133,19 @@ function Sidebar() {
                                 </a>
                                 <ul className="nav nav-treeview">
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link active">
+                                        <a className="nav-link active">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Add Product</p>
                                         </a>
                                     </li>
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link">
+                                        <a className="nav-link">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Product List</p>
                                         </a>
                                     </li>
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link">
+                                        <a className="nav-link">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Product Details</p>
                                         </a>
@@ -131,7 +154,7 @@ function Sidebar() {
                             </li>
                             {/* orders */}
                             <li className={`nav-item  ${openMenus.order && 'menu-open'}`}>
-                                <a href="#" className={`nav-link ${openMenus.order && 'active'}`} onClick={() => handleToggleMenu('order')}>
+                                <a className={`nav-link ${openMenus.order && 'active'}`} onClick={() => handleToggleMenu('order')}>
                                     <FontAwesomeIcon icon={faShoppingCart} className='nav-icon' />
                                     <p>
                                         Order
@@ -140,13 +163,13 @@ function Sidebar() {
                                 </a>
                                 <ul className="nav nav-treeview">
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link active">
+                                        <a className="nav-link active">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Add Order</p>
                                         </a>
                                     </li>
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link">
+                                        <a className="nav-link">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Order List</p>
                                         </a>
@@ -155,7 +178,7 @@ function Sidebar() {
                             </li>
                             {/* users */}
                             <li className={`nav-item  ${openMenus.user && 'menu-open'}`}>
-                                <a href="#" className={`nav-link ${openMenus.user && 'active'}`} onClick={() => handleToggleMenu('user')}>
+                                <a className={`nav-link ${openMenus.user && 'active'}`} onClick={() => handleToggleMenu('user')}>
                                     <FontAwesomeIcon icon={faUser} className='nav-icon' />
                                     <p>
                                         User
@@ -164,13 +187,13 @@ function Sidebar() {
                                 </a>
                                 <ul className="nav nav-treeview">
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link active">
+                                        <a className="nav-link active">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Add User</p>
                                         </a>
                                     </li>
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link">
+                                        <a className="nav-link">
                                             <i className="far fa-circle nav-icon" />
                                             <p>User List</p>
                                         </a>
@@ -179,7 +202,7 @@ function Sidebar() {
                             </li>
                             {/* settings */}
                             <li className={`nav-item  ${openMenus.settings && 'menu-open'}`}>
-                                <a href="#" className={`nav-link ${openMenus.settings && 'active'}`} onClick={() => handleToggleMenu('settings')}>
+                                <a className={`nav-link ${openMenus.settings && 'active'}`} onClick={() => handleToggleMenu('settings')}>
                                     <FontAwesomeIcon icon={faCogs} className='nav-icon' />
                                     <p>
                                         Settings
@@ -188,13 +211,13 @@ function Sidebar() {
                                 </a>
                                 <ul className="nav nav-treeview">
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link active">
+                                        <a className="nav-link active">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Manage Footer</p>
                                         </a>
                                     </li>
                                     <li className="nav-item">
-                                        <a href="#" className="nav-link">
+                                        <a className="nav-link">
                                             <i className="far fa-circle nav-icon" />
                                             <p>Profile</p>
                                         </a>

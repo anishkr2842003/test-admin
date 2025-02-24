@@ -1,33 +1,66 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Table, Input, Button, Space } from 'antd';
+import ContentLoader from 'react-content-loader';
 import { SearchOutlined } from '@ant-design/icons';
 import { createStyles } from 'antd-style';
-import data from './data.json';
+import apiClient from '../../utils/apiClient';
+import { useMediaQuery } from 'react-responsive';
 
-const useStyle = createStyles(({ css, token }) => {
-    const { antCls } = token;
-    return {
-        customTable: css`
-        ${antCls}-table {
-          ${antCls}-table-container {
-            ${antCls}-table-body,
-            ${antCls}-table-content {
-              scrollbar-width: thin;
-              scrollbar-color: #eaeaea transparent;
-              scrollbar-gutter: stable;
-            }
-          }
-        }
-      `,
-    };
-});
+const ShimmerTable = () => (
+    <ContentLoader
+        speed={2}
+        width="100%"
+        height={300}
+        backgroundColor="#f3f3f3"
+        foregroundColor="#ecebeb"
+    >
+        {Array(5)
+            .fill('')
+            .map((_, index) => (
+                <rect key={index} x="10" y={index * 40} rx="3" ry="3" width="95%" height="30" />
+            ))}
+    </ContentLoader>
+);
 
-function Datatable2() {
+function Datatable(refreshData) {
 
-    const dataSource = data;
-
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
+    const isMobile = useMediaQuery({ maxWidth: 768 });
+    const [loadTime, setLoadTime] = useState(0);
+
+    useEffect(() => {
+
+        const timerLabel = 'Data loaded in' + Date.now();
+        console.time(timerLabel);
+        const fetchData = async () => {
+            try {
+                const response = await apiClient.get('/get-data');
+                setData(response.data.data);
+                setLoading(false);
+            } catch (error) {
+                setError(error);
+                setLoading(false);
+            } finally {
+                console.timeEnd(timerLabel);
+            }
+        };
+
+        fetchData();
+    }, [refreshData]);
+
+    if (loading) {
+        return <ShimmerTable />;
+    }
+
+    if (error) {
+        return <div>Error: {error.message}</div>;
+    }
+
+    const dataSource = data.map(item => ({ ...item, key: item.id })).reverse();
 
     const getColumnSearchProps = (dataIndex) => ({
         filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -87,19 +120,42 @@ function Datatable2() {
             dataIndex: 'id',
             key: 'id',
             sorter: (a, b) => a.key.localeCompare(b.key),
-            ...getColumnSearchProps('key')
+            // ...getColumnSearchProps('id')
         },
         {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
-            sorter: (a, b) => a.name.localeCompare(b.name)
+            sorter: (a, b) => a.name.localeCompare(b.name),
+            ...getColumnSearchProps('name')
         },
         {
-            title: 'Age',
-            dataIndex: 'age',
-            key: 'age',
-            sorter: (a, b) => a.age - b.age,
+            title: 'Position',
+            dataIndex: 'position',
+            key: 'position',
+            sorter: (a, b) => a.position.localeCompare(b.position),
+            ...getColumnSearchProps('position')
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+            sorter: (a, b) => a.email.localeCompare(b.email),
+            ...getColumnSearchProps('email')
+        },
+        {
+            title: 'Contact No',
+            dataIndex: 'contact_nu',
+            key: 'contact_nu',
+            sorter: (a, b) => a.contact_nu.localeCompare(b.contact_nu),
+            ...getColumnSearchProps('contact_nu')
+        },
+        {
+            title: 'DOB',
+            dataIndex: 'dob',
+            key: 'dob',
+            sorter: (a, b) => a.dob.localeCompare(b.dob),
+            ...getColumnSearchProps('dob')
         },
         {
             title: 'Address',
@@ -109,23 +165,22 @@ function Datatable2() {
         },
     ];
 
-    const { styles } = useStyle();
+
     return (
         <>
             <Table
                 dataSource={dataSource}
                 columns={columns}
-                bordered title={() => 'Hello'}
-                footer={() => 'Footer'}
-                pagination={{
-                    pageSize: 10,
-                }}
+                // pagination={{
+                //     pageSize: 5,
+                // }}
                 scroll={{
-                    y: 50 * 5,
+                    x: 'max-content',
+                    y: isMobile ? 300 : 500,
                 }}
-            />;
+            />
         </>
     )
 }
 
-export default Datatable2
+export default Datatable

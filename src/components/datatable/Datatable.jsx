@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from 'react'
 import { Table, Input, Button, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { ShimmerTable } from "react-shimmer-effects";
+import ContentLoader from 'react-content-loader';
 import { createStyles } from 'antd-style';
-import data from './data.json';
-import axios from 'axios';
+import apiClient from '../../utils/apiClient';
+
+const ShimmerTable = () => (
+    <ContentLoader
+        speed={2}
+        width="100%"
+        height={300}
+        backgroundColor="#f3f3f3"
+        foregroundColor="#ecebeb"
+    >
+        {Array(5)
+            .fill('')
+            .map((_, index) => (
+                <rect key={index} x="10" y={index * 40} rx="3" ry="3" width="95%" height="30" />
+            ))}
+    </ContentLoader>
+);
 
 function Datatable() {
 
@@ -15,18 +30,18 @@ function Datatable() {
     const [searchedColumn, setSearchedColumn] = useState('');
 
     useEffect(() => {
-        const timerLabel = 'fetchData' + Date.now(); // Create a unique label
+        const timerLabel = 'fetchData' + Date.now();
         console.time(timerLabel);
         const fetchData = async () => {
             try {
-                const response = await axios.get('https://testapi.rasanonline.com/api/get-data');
+                const response = await apiClient.get('/get-data');
                 setData(response.data.data);
                 setLoading(false);
             } catch (error) {
                 setError(error);
                 setLoading(false);
-            }finally {
-                console.timeEnd(timerLabel); // Stop the timer and log the elapsed time
+            } finally {
+                console.timeEnd(timerLabel);
             }
         };
 
@@ -34,7 +49,7 @@ function Datatable() {
     }, []);
 
     if (loading) {
-        return <ShimmerTable row={5} col={7} />;
+        return <ShimmerTable />;
     }
 
     if (error) {

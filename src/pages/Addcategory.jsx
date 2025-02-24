@@ -1,36 +1,66 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import styled from 'styled-components';
+import apiClient from '../utils/apiClient';
 import Dropzone from '../components/dropzone/Dropzone';
+import { toast, ToastContainer } from 'react-toastify';
+
+// Define styled components
+const FormContainer = styled.div`
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+`;
+
+const Input = styled.input.withConfig({
+    shouldForwardProp: (prop) => prop !== 'error',
+})`
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border: 1px solid ${(props) => (props.error ? 'red' : '#ccc')};
+  border-radius: 4px;
+  &:focus {
+    border-color: ${(props) => (props.error ? 'red' : '#007bff')};
+    box-shadow: ${(props) => (props.error ? '0 0 5px rgba(255, 0, 0, 0.5)' : '0 0 5px rgba(0, 123, 255, 0.5)')};
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: red;
+  font-size: 14px;
+`;
 
 function Addcategory() {
-    const [formData, setFormData] = useState({
-        name: '',
-        position: '',
-        email: '',
-        contact_nu: '',
-        dob: '',
-        address: '',
-    });
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors }
+    } = useForm();
 
-    console.log(formData)
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
+        toast.loading('Submitting data...');
+        console.time('Data Submission');
         try {
-            const response = await axios.post('https://testapi.rasanonline.com/api/store-data', formData);
-            console.log('Data sent successfully:', response.data);
-            // Optionally, you can reset the form or show a success message
+            const response = await apiClient.post('/store-data', data);
+            console.timeEnd('Data Submission');
+            var statusCode = response.data.status;
+            var message = response.data.msg;
+            if (statusCode == 201) {
+                toast.dismiss();
+                toast.success(message);
+                reset();
+            } else {
+                toast.dismiss();
+                toast.error(message);
+            }
         } catch (error) {
-            console.error('Error sending data:', error);
-            // Optionally, you can show an error message
+            // console.error('Error sending data:', error);
+            toast.dismiss();
+            toast.error('Error submitting data');
         }
     };
 
@@ -41,12 +71,12 @@ function Addcategory() {
                 <div className="container-fluid">
                     <div className="row mb-2">
                         <div className="col-sm-6">
-                            <h1>Add Category</h1>
+                            <h1>Add Data</h1>
                         </div>
                         <div className="col-sm-6">
                             <ol className="breadcrumb float-sm-right">
                                 <li className="breadcrumb-item"><a href="#">Home</a></li>
-                                <li className="breadcrumb-item active">Add Category</li>
+                                <li className="breadcrumb-item active">Add Data</li>
                             </ol>
                         </div>
                     </div>
@@ -61,41 +91,43 @@ function Addcategory() {
                             {/* general form elements */}
                             <div className="card card-primary">
                                 <div className="card-header">
-                                    <h3 className="card-title">Add new category here</h3>
+                                    <h3 className="card-title">Add new data here</h3>
                                 </div>
                                 {/* /.card-header */}
                                 {/* form start */}
-                                <form onSubmit={handleSubmit}>
+                                <form onSubmit={handleSubmit(onSubmit)}>
                                     <div className="card-body">
                                         <div className="row">
                                             <div className="col-6">
                                                 <div className="form-group">
                                                     <label htmlFor="name">Name</label>
-                                                    <input
+                                                    <Input
                                                         type="text"
-                                                        className="form-control"
                                                         id="name"
                                                         name="name"
                                                         placeholder="Enter Category Name"
-                                                        value={formData.name}
-                                                        onChange={handleChange}
-                                                        minLength={3}
-                                                        maxLength={10}
+                                                        {...register("name", { required: "Name is required", minLength: { value: 3, message: "Name must be at least 3 characters" }, maxLength: { value: 10, message: "Name must be at most 10 characters" } })}
+                                                        error={errors.name}
                                                     />
+                                                    {errors.name && (
+                                                        <ErrorMessage>{errors.name.message}</ErrorMessage>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="col-6">
                                                 <div className="form-group">
                                                     <label htmlFor="position">Position</label>
-                                                    <input
+                                                    <Input
                                                         type="text"
-                                                        className="form-control"
                                                         id="position"
                                                         name="position"
                                                         placeholder="Enter Position"
-                                                        value={formData.position}
-                                                        onChange={handleChange}
+                                                        {...register("position", { required: "Position is required" })}
+                                                        error={errors.position}
                                                     />
+                                                    {errors.position && (
+                                                        <ErrorMessage>{errors.position.message}</ErrorMessage>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -104,29 +136,33 @@ function Addcategory() {
                                             <div className="col-6">
                                                 <div className="form-group">
                                                     <label htmlFor="email">Email</label>
-                                                    <input
+                                                    <Input
                                                         type="email"
-                                                        className="form-control"
                                                         id="email"
                                                         name="email"
                                                         placeholder="Enter Email"
-                                                        value={formData.email}
-                                                        onChange={handleChange}
+                                                        {...register("email", { required: "Email is required", pattern: { value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/, message: "Invalid email address" } })}
+                                                        error={errors.email}
                                                     />
+                                                    {errors.email && (
+                                                        <ErrorMessage>{errors.email.message}</ErrorMessage>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="col-6">
                                                 <div className="form-group">
                                                     <label htmlFor="contact_no">Contact No</label>
-                                                    <input
+                                                    <Input
                                                         type="number"
-                                                        className="form-control"
                                                         id="contact_no"
                                                         name="contact_nu"
                                                         placeholder="Enter Contact No"
-                                                        value={formData.contact_nu}
-                                                        onChange={handleChange}
+                                                        {...register("contact_nu", { required: "Contact number is required" })}
+                                                        error={errors.contact_nu}
                                                     />
+                                                    {errors.contact_nu && (
+                                                        <ErrorMessage>{errors.contact_nu.message}</ErrorMessage>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -135,29 +171,33 @@ function Addcategory() {
                                             <div className="col-6">
                                                 <div className="form-group">
                                                     <label htmlFor="dob">DOB</label>
-                                                    <input
+                                                    <Input
                                                         type="date"
-                                                        className="form-control"
                                                         id="dob"
                                                         name="dob"
                                                         placeholder="Enter DOB"
-                                                        value={formData.dob}
-                                                        onChange={handleChange}
+                                                        {...register("dob", { required: "Date of birth is required" })}
+                                                        error={errors.dob}
                                                     />
+                                                    {errors.dob && (
+                                                        <ErrorMessage>{errors.dob.message}</ErrorMessage>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="col-6">
                                                 <div className="form-group">
                                                     <label htmlFor="address">Address</label>
-                                                    <input
+                                                    <Input
                                                         type="text"
-                                                        className="form-control"
                                                         id="address"
                                                         name="address"
                                                         placeholder="Enter Address"
-                                                        value={formData.address}
-                                                        onChange={handleChange}
+                                                        {...register("address", { required: "Address is required" })}
+                                                        error={errors.address}
                                                     />
+                                                    {errors.address && (
+                                                        <ErrorMessage>{errors.address.message}</ErrorMessage>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -170,7 +210,7 @@ function Addcategory() {
                                     </div>
                                     {/* /.card-body */}
                                     <div className="card-footer">
-                                        <button type="submit" className="btn btn-primary">Add Category</button>
+                                        <button type="submit" className="btn btn-primary">Add Data</button>
                                     </div>
                                 </form>
                             </div>
@@ -178,6 +218,7 @@ function Addcategory() {
                     </div>
                 </div>
             </section>
+            <ToastContainer />
         </>
     );
 }

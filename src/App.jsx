@@ -6,6 +6,7 @@ import Addcategory from './pages/Addcategory'
 import CategoryList from './pages/CategoryList'
 import Datatable from './components/datatable/Datatable'
 import Datatable2 from './components/datatable/Datatable2'
+import Test from './pages/Test'
 import TextEditor from './components/textEditor/TextEditor'
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path='/addcategory' element={<Addcategory />} />
           <Route path='/allcategory' element={<CategoryList />} />
-          <Route path='/test' element={<Datatable2 />} />
+          <Route path='/test' element={<Test />} />
           <Route path='/test2' element={<TextEditor />} />
         </Route>
       </Routes>
